@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'bloc/todo_bloc.dart';
 import 'home_page.dart';
+import 'todo_observer.dart';
 
 void main() {
+  Bloc.observer = TodoObserver();
+
   runApp(BlocProvider(
     create: (context) => TodoBloc(),
     child: MyApp(),
