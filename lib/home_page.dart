@@ -198,6 +198,7 @@ class _TodoFormState extends State<TodoForm> {
             TextField(
               controller: ctrlName,
               decoration: InputDecoration(labelText: 'Task Name'),
+              textCapitalization: TextCapitalization.words,
             ),
             GestureDetector(
               onTap: () {
