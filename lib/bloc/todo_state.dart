@@ -31,3 +31,12 @@ class TodoLoadFailure extends TodoState {
   @override
   List<Object> get props => [message];
 }
+
+class TodoScheduleSuccess extends TodoState {
+  final String message;
+
+  const TodoScheduleSuccess(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

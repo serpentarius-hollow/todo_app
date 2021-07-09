@@ -6,6 +6,10 @@ import 'package:intl/intl.dart';
 import 'bloc/todo_bloc.dart';
 import 'todo.dart';
 
+String formatDate(DateTime date) {
+  return DateFormat('EEEE, d MMMM @ hh:mm a').format(date);
+}
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -29,6 +33,12 @@ class _HomePageState extends State<HomePage> {
       body: BlocConsumer<TodoBloc, TodoState>(
         listener: (context, state) {
           if (state is TodoLoadFailure) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(content: Text(state.message)));
+          }
+
+          if (state is TodoScheduleSuccess) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(SnackBar(content: Text(state.message)));
@@ -122,11 +132,20 @@ class TodoCheckboxTile extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                  child: Text(
-                todo.taskName,
-                style: todo.complete
-                    ? TextStyle(decoration: TextDecoration.lineThrough)
-                    : null,
+                  child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    todo.taskName,
+                    style: todo.complete
+                        ? TextStyle(decoration: TextDecoration.lineThrough)
+                        : null,
+                  ),
+                  Text(
+                    formatDate(todo.taskDate),
+                    style: Theme.of(context).textTheme.caption,
+                  )
+                ],
               )),
               Checkbox(value: todo.complete, onChanged: onChanged)
             ],
@@ -221,9 +240,8 @@ class _TodoFormState extends State<TodoForm> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                        child: Text(taskDate != null
-                            ? '${DateFormat('EEEE, d MMMM - hh:mm a').format(taskDate!)}'
-                            : '')),
+                        child: Text(
+                            taskDate != null ? formatDate(taskDate!) : '')),
                     Icon(Icons.arrow_drop_down),
                   ],
                 ),

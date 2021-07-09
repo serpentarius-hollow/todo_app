@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:todo_app/notification_service.dart';
 
 import '../failure.dart';
 import '../todo.dart';
@@ -12,6 +13,8 @@ part 'todo_state.dart';
 
 class TodoBloc extends Bloc<TodoEvent, TodoState> {
   final TodoRepository _repository;
+
+  final _notificationService = NotificationService();
 
   TodoBloc(this._repository) : super(TodoInitial());
 
@@ -51,6 +54,8 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
             .toList();
 
         yield TodoLoadSuccess(updatedTodos);
+
+        _notificationService.cancelNotification(event.todo.id);
       } on Failure catch (err) {
         yield TodoLoadFailure(err.message);
         yield currentState;
@@ -77,6 +82,8 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
         final updatedTodos = currentState.todos.map((todo) {
           return todo.id == event.todo.id ? todoUpdated : todo;
         }).toList();
+
+        yield* _scheduleNotification(event.todo);
 
         yield TodoLoadSuccess(updatedTodos);
       } on Failure catch (err) {
@@ -105,6 +112,8 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
         final updatedTodos = List<Todo>.from((state as TodoLoadSuccess).todos)
           ..add(todoUpdated);
 
+        yield* _scheduleNotification(event.todo);
+
         yield TodoLoadSuccess(updatedTodos);
       } on Failure catch (err) {
         yield TodoLoadFailure(err.message);
@@ -113,8 +122,25 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
     }
   }
 
+  Stream<TodoState> _scheduleNotification(Todo todo) async* {
+    final difference = todo.taskDate.difference(DateTime.now());
+
+    if (difference.inMinutes >= 5) {
+      _notificationService.scheduleNotification(
+        todo.id,
+        todo.taskName,
+        'Task is in 5 minutes',
+        todo.taskDate,
+      );
+
+      yield TodoScheduleSuccess('Setting a reminder...');
+    }
+  }
+
   Stream<TodoState> _mapTodoLoadedToState() async* {
     try {
+      _notificationService.init();
+
       final todos = await _repository.selectAllTodos();
 
       yield TodoLoadSuccess(todos);
