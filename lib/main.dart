@@ -3,13 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'bloc/todo_bloc.dart';
 import 'home_page.dart';
+import 'todo_datasource.dart';
 import 'todo_observer.dart';
+import 'todo_repository.dart';
 
 void main() {
   Bloc.observer = TodoObserver();
 
   runApp(BlocProvider(
-    create: (context) => TodoBloc(),
+    create: (context) =>
+        TodoBloc(TodoRepositoryImplementation(TodoDatasource())),
     child: MyApp(),
   ));
 }
