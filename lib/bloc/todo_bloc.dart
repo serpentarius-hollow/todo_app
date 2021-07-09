@@ -11,14 +11,9 @@ part 'todo_event.dart';
 part 'todo_state.dart';
 
 class TodoBloc extends Bloc<TodoEvent, TodoState> {
-  final TodoRepository _todoRepository;
+  final TodoRepository _repository;
 
-  TodoBloc(this._todoRepository) : super(TodoInitial());
-
-  // TODO: save todos to repository
-  // Future _saveTodos(List<Todo> todos) {
-  //   throw Exception();
-  // }
+  TodoBloc(this._repository) : super(TodoInitial());
 
   @override
   Stream<TodoState> mapEventToState(
@@ -49,12 +44,15 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
   ) async* {
     if (currentState is TodoLoadSuccess) {
       try {
+        await _repository.deleteTodo(event.todo);
+
         final updatedTodos = currentState.todos
             .where((todo) => todo.id != event.todo.id)
             .toList();
+
         yield TodoLoadSuccess(updatedTodos);
-      } catch (_) {
-        yield TodoLoadFailure('Delete Failure');
+      } on Failure catch (err) {
+        yield TodoLoadFailure(err.message);
         yield currentState;
       }
     }
@@ -66,16 +64,18 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
   ) async* {
     if (currentState is TodoLoadSuccess) {
       try {
-        final latitude = await _todoRepository.getLatitude();
-        final longitude = await _todoRepository.getLongitude();
+        final latitude = await _repository.getLatitude();
+        final longitude = await _repository.getLongitude();
+
+        final todoUpdated = event.todo.copyWith(
+          latitude: latitude,
+          longitude: longitude,
+        );
+
+        await _repository.updateTodo(todoUpdated);
 
         final updatedTodos = currentState.todos.map((todo) {
-          return todo.id == event.todo.id
-              ? event.todo.copyWith(
-                  latitude: latitude,
-                  longitude: longitude,
-                )
-              : todo;
+          return todo.id == event.todo.id ? todoUpdated : todo;
         }).toList();
 
         yield TodoLoadSuccess(updatedTodos);
@@ -92,14 +92,18 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
   ) async* {
     if (currentState is TodoLoadSuccess) {
       try {
-        final latitude = await _todoRepository.getLatitude();
-        final longitude = await _todoRepository.getLongitude();
+        final latitude = await _repository.getLatitude();
+        final longitude = await _repository.getLongitude();
+
+        final todoUpdated = event.todo.copyWith(
+          latitude: latitude,
+          longitude: longitude,
+        );
+
+        await _repository.insertTodo(todoUpdated);
 
         final updatedTodos = List<Todo>.from((state as TodoLoadSuccess).todos)
-          ..add(event.todo.copyWith(
-            latitude: latitude,
-            longitude: longitude,
-          ));
+          ..add(todoUpdated);
 
         yield TodoLoadSuccess(updatedTodos);
       } on Failure catch (err) {
@@ -111,11 +115,8 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
 
   Stream<TodoState> _mapTodoLoadedToState() async* {
     try {
-      final todos = [
-        Todo(taskName: 'Task 1', taskDate: DateTime.now()),
-        Todo(taskName: 'Task 2', taskDate: DateTime.now()),
-        Todo(taskName: 'Task 3', taskDate: DateTime.now()),
-      ];
+      final todos = await _repository.selectAllTodos();
+
       yield TodoLoadSuccess(todos);
     } catch (_) {
       yield TodoLoadFailure('Load Failure');
