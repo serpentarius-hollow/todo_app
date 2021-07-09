@@ -3,13 +3,17 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../failure.dart';
 import '../todo.dart';
+import '../todo_repository.dart';
 
 part 'todo_event.dart';
 part 'todo_state.dart';
 
 class TodoBloc extends Bloc<TodoEvent, TodoState> {
-  TodoBloc() : super(TodoInitial());
+  final TodoRepository _todoRepository;
+
+  TodoBloc(this._todoRepository) : super(TodoInitial());
 
   // TODO: save todos to repository
   // Future _saveTodos(List<Todo> todos) {
@@ -49,9 +53,9 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
             .where((todo) => todo.id != event.todo.id)
             .toList();
         yield TodoLoadSuccess(updatedTodos);
-        // _saveTodos(updatedTodos);
       } catch (_) {
         yield TodoLoadFailure('Delete Failure');
+        yield currentState;
       }
     }
   }
@@ -62,14 +66,22 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
   ) async* {
     if (currentState is TodoLoadSuccess) {
       try {
+        final latitude = await _todoRepository.getLatitude();
+        final longitude = await _todoRepository.getLongitude();
+
         final updatedTodos = currentState.todos.map((todo) {
-          return todo.id == event.todo.id ? event.todo : todo;
+          return todo.id == event.todo.id
+              ? event.todo.copyWith(
+                  latitude: latitude,
+                  longitude: longitude,
+                )
+              : todo;
         }).toList();
 
         yield TodoLoadSuccess(updatedTodos);
-        // _saveTodos(updatedTodos);
-      } catch (_) {
-        yield TodoLoadFailure('Update Failure');
+      } on Failure catch (err) {
+        yield TodoLoadFailure(err.message);
+        yield currentState;
       }
     }
   }
@@ -80,13 +92,19 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
   ) async* {
     if (currentState is TodoLoadSuccess) {
       try {
+        final latitude = await _todoRepository.getLatitude();
+        final longitude = await _todoRepository.getLongitude();
+
         final updatedTodos = List<Todo>.from((state as TodoLoadSuccess).todos)
-          ..add(event.todo);
+          ..add(event.todo.copyWith(
+            latitude: latitude,
+            longitude: longitude,
+          ));
 
         yield TodoLoadSuccess(updatedTodos);
-        // _saveTodos(updatedTodos);
-      } catch (_) {
-        yield TodoLoadFailure('Add Failure');
+      } on Failure catch (err) {
+        yield TodoLoadFailure(err.message);
+        yield currentState;
       }
     }
   }
@@ -101,6 +119,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
       yield TodoLoadSuccess(todos);
     } catch (_) {
       yield TodoLoadFailure('Load Failure');
+      yield TodoLoadSuccess();
     }
   }
 }
