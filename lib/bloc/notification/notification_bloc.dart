@@ -82,48 +82,6 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     }
   }
 
-  // Stream<NotificationState> _mapNotificationPushedToState(
-  //   NotificationState currentState,
-  //   NotificationPushed event,
-  // ) async* {
-  //   if (currentState is NotificationInitial) {
-  //     if (event.scheduledDate != null) {
-  //       _scheduleNotification(event);
-  //     }
-
-  //     yield currentState;
-  //   }
-  // }
-
-  // Stream<NotificationState> _scheduleNotification(
-  //   NotificationPushed event,
-  // ) async* {
-  //   final difference = event.scheduledDate!.difference(DateTime.now());
-
-  //   if (difference.inMinutes >= 5) {
-  //     _notificationService.scheduleNotification(
-  //       event.id,
-  //       event.title,
-  //       'Task is in 5 minutes',
-  //       event.scheduledDate!,
-  //     );
-
-  //     yield NotificationScheduledSuccess('Setting a reminder...');
-  //   }
-  // }
-
-  // Stream<NotificationState> _mapNotificationCancelledToState(
-  //   NotificationState currentState,
-  //   NotificationCancelled event,
-  // ) async* {
-  //   if (currentState is NotificationInitial) {
-  //     _notificationService.cancelNotification(event.id);
-
-  //     yield NotificationCancelSuccess();
-  //     yield currentState;
-  //   }
-  // }
-
   @override
   Future<void> close() {
     _todoBlocSub.cancel();
