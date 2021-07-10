@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 
+import 'bloc/form/form_bloc.dart';
 import 'bloc/notification/notification_bloc.dart';
 import 'bloc/todo/todo_bloc.dart';
 import 'todo.dart';
+import 'todo_form.dart';
 
 String formatDate(DateTime date) {
   return DateFormat('EEEE, d MMMM @ hh:mm a').format(date);
@@ -91,7 +92,10 @@ class _HomePageState extends State<HomePage> {
         child: FloatingActionButton.extended(
             onPressed: () => showDialog(
                   context: context,
-                  builder: (_) => TodoForm(),
+                  builder: (_) => BlocProvider(
+                    create: (context) => FormBloc(),
+                    child: TodoForm(),
+                  ),
                 ),
             icon: Icon(Icons.add),
             label: Text('Add')),
@@ -167,122 +171,122 @@ class TodoCheckboxTile extends StatelessWidget {
   }
 }
 
-class TodoForm extends StatefulWidget {
-  final Todo? todo;
+// class TodoForm extends StatefulWidget {
+//   final Todo? todo;
 
-  const TodoForm({this.todo});
+//   const TodoForm({this.todo});
 
-  @override
-  _TodoFormState createState() => _TodoFormState();
-}
+//   @override
+//   _TodoFormState createState() => _TodoFormState();
+// }
 
-class _TodoFormState extends State<TodoForm> {
-  DateTime? taskDate;
+// class _TodoFormState extends State<TodoForm> {
+//   DateTime? taskDate;
 
-  final ctrlName = TextEditingController();
+//   final ctrlName = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    taskDate = widget.todo?.taskDate;
-    ctrlName.text = widget.todo?.taskName ?? '';
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     taskDate = widget.todo?.taskDate;
+//     ctrlName.text = widget.todo?.taskName ?? '';
+//   }
 
-  @override
-  void dispose() {
-    ctrlName.dispose();
-    super.dispose();
-  }
+//   @override
+//   void dispose() {
+//     ctrlName.dispose();
+//     super.dispose();
+//   }
 
-  void save(TodoBloc todoBloc, Todo? todo) {
-    if (todo != null) {
-      todoBloc.add(TodoUpdated(
-        todo.copyWith(
-          taskName: ctrlName.text,
-          taskDate: taskDate,
-        ),
-      ));
-    } else {
-      todoBloc.add(TodoAdded(
-        Todo(
-          taskName: ctrlName.text,
-          taskDate: taskDate!,
-        ),
-      ));
-    }
-  }
+// void save(TodoBloc todoBloc, Todo? todo) {
+//   if (todo != null) {
+//     todoBloc.add(TodoUpdated(
+//       todo.copyWith(
+//         taskName: ctrlName.text,
+//         taskDate: taskDate,
+//       ),
+//     ));
+//   } else {
+//     todoBloc.add(TodoAdded(
+//       Todo(
+//         taskName: ctrlName.text,
+//         taskDate: taskDate!,
+//       ),
+//     ));
+//   }
+// }
 
-  @override
-  Widget build(BuildContext context) {
-    final todoBloc = BlocProvider.of<TodoBloc>(context);
+//   @override
+//   Widget build(BuildContext context) {
+//     final todoBloc = BlocProvider.of<TodoBloc>(context);
 
-    return Dialog(
-      elevation: 0,
-      backgroundColor: Colors.white,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: ctrlName,
-              decoration: InputDecoration(labelText: 'Task Name'),
-              textCapitalization: TextCapitalization.words,
-            ),
-            GestureDetector(
-              onTap: () {
-                DatePicker.showDateTimePicker(
-                  context,
-                  showTitleActions: true,
-                  onConfirm: (date) {
-                    setState(() {
-                      taskDate = date;
-                    });
-                  },
-                  minTime: taskDate ?? DateTime.now(),
-                  currentTime: taskDate ?? DateTime.now(),
-                );
-              },
-              child: InputDecorator(
-                decoration: InputDecoration(labelText: 'Date & Time'),
-                isEmpty: taskDate == null,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                        child: Text(
-                            taskDate != null ? formatDate(taskDate!) : '')),
-                    Icon(Icons.arrow_drop_down),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                    child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.grey,
-                  ),
-                  child: Text('Cancel'),
-                )),
-                SizedBox(width: 10),
-                Expanded(
-                    child: ElevatedButton(
-                  onPressed: () {
-                    save(todoBloc, widget.todo);
-                    Navigator.pop(context);
-                  },
-                  child: Text('Save'),
-                )),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
+//     return Dialog(
+//       elevation: 0,
+//       backgroundColor: Colors.white,
+//       child: Container(
+//         padding: const EdgeInsets.all(20),
+//         child: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           crossAxisAlignment: CrossAxisAlignment.stretch,
+//           children: [
+//             TextField(
+//               controller: ctrlName,
+//               decoration: InputDecoration(labelText: 'Task Name'),
+//               textCapitalization: TextCapitalization.words,
+//             ),
+//             GestureDetector(
+//               onTap: () {
+//                 DatePicker.showDateTimePicker(
+//                   context,
+//                   showTitleActions: true,
+//                   onConfirm: (date) {
+//                     setState(() {
+//                       taskDate = date;
+//                     });
+//                   },
+//                   minTime: taskDate ?? DateTime.now(),
+//                   currentTime: taskDate ?? DateTime.now(),
+//                 );
+//               },
+//               child: InputDecorator(
+//                 decoration: InputDecoration(labelText: 'Date & Time'),
+//                 isEmpty: taskDate == null,
+//                 child: Row(
+//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                   children: [
+//                     Expanded(
+//                         child: Text(
+//                             taskDate != null ? formatDate(taskDate!) : '')),
+//                     Icon(Icons.arrow_drop_down),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//             const SizedBox(height: 20),
+//             Row(
+//               children: [
+//                 Expanded(
+//                     child: ElevatedButton(
+//                   onPressed: () => Navigator.pop(context),
+//                   style: ElevatedButton.styleFrom(
+//                     primary: Colors.grey,
+//                   ),
+//                   child: Text('Cancel'),
+//                 )),
+//                 SizedBox(width: 10),
+//                 Expanded(
+//                     child: ElevatedButton(
+//                   onPressed: () {
+//                     save(todoBloc, widget.todo);
+//                     Navigator.pop(context);
+//                   },
+//                   child: Text('Save'),
+//                 )),
+//               ],
+//             )
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
