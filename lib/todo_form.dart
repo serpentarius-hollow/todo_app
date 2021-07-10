@@ -28,7 +28,7 @@ class TodoForm extends StatelessWidget {
       todoBloc.add(TodoAdded(
         Todo(
           taskName: taskName,
-          taskDate: taskDate!,
+          taskDate: taskDate,
         ),
       ));
     }
