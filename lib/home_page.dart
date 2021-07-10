@@ -1,10 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import 'authentication.dart';
 import 'bloc/form/form_bloc.dart';
 import 'bloc/notification/notification_bloc.dart';
 import 'bloc/todo/todo_bloc.dart';
+import 'login_page.dart';
 import 'todo.dart';
 import 'todo_form.dart';
 
@@ -13,11 +16,24 @@ String formatDate(DateTime date) {
 }
 
 class HomePage extends StatefulWidget {
+  final User user;
+
+  const HomePage({required this.user});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  late User _user;
+  bool _isSigningOut = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = widget.user;
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -32,6 +48,26 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('To Do List'),
+        actions: [
+          _isSigningOut
+              ? CircularProgressIndicator()
+              : IconButton(
+                  onPressed: () async {
+                    setState(() {
+                      _isSigningOut = true;
+                    });
+                    await Authentication.signOut(context: context);
+                    setState(() {
+                      _isSigningOut = false;
+                    });
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => LoginPage()));
+                  },
+                  icon: Icon(
+                    Icons.logout,
+                  ),
+                )
+        ],
       ),
       body: MultiBlocListener(
         listeners: [

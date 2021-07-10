@@ -4,7 +4,7 @@ import 'package:todo_app/bloc/notification/notification_bloc.dart';
 import 'package:todo_app/notification_service.dart';
 
 import 'bloc/todo/todo_bloc.dart';
-import 'home_page.dart';
+import 'login_page.dart';
 import 'todo_datasource.dart';
 import 'todo_observer.dart';
 import 'todo_repository.dart';
@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: LoginPage(),
     );
   }
 }
