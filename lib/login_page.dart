@@ -16,27 +16,19 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Theme.of(context).primaryColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(
-            left: 16.0,
-            right: 16.0,
-            bottom: 20.0,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              FutureBuilder(
-                future: Authentication.initializeFirebase(context: context),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Text('Error initializing Firebase');
-                  } else if (snapshot.connectionState == ConnectionState.done) {
-                    return GoogleSignInButton();
-                  }
-                  return CircularProgressIndicator();
-                },
-              ),
-            ],
+          padding: const EdgeInsets.all(20.0),
+          child: Center(
+            child: FutureBuilder(
+              future: Authentication.initializeFirebase(context: context),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Text('Error initializing Firebase');
+                } else if (snapshot.connectionState == ConnectionState.done) {
+                  return GoogleSignInButton();
+                }
+                return CircularProgressIndicator();
+              },
+            ),
           ),
         ),
       ),
