@@ -10,4 +10,10 @@ class TodoObserver extends BlocObserver {
     super.onTransition(bloc, transition);
     print('${bloc.runtimeType} $transition');
   }
+
+  @override
+  void onCreate(BlocBase bloc) {
+    super.onCreate(bloc);
+    print(bloc);
+  }
 }

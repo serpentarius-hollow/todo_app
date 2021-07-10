@@ -1,17 +1,8 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
-  static final _notificationService = NotificationService._internal();
-
-  factory NotificationService() {
-    return _notificationService;
-  }
-
-  NotificationService._internal();
-
   static const channelId = 'todo-channel-id';
   static const channelName = 'todo-channel-name';
   static const channelDesc = 'todo-channel-id';
@@ -19,6 +10,8 @@ class NotificationService {
   final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
+    print('Initialize notification service');
+
     final initSettingsAndroid = AndroidInitializationSettings('app_icon');
 
     final initSettings = InitializationSettings(

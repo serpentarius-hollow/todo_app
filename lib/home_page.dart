@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 
-import 'bloc/todo_bloc.dart';
+import 'bloc/notification/notification_bloc.dart';
+import 'bloc/todo/todo_bloc.dart';
 import 'todo.dart';
 
 String formatDate(DateTime date) {
@@ -20,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     context.read<TodoBloc>().add(TodoLoaded());
+    context.read<NotificationBloc>().add(NotificationStarted());
   }
 
   @override
@@ -30,50 +32,59 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text('To Do List'),
       ),
-      body: BlocConsumer<TodoBloc, TodoState>(
-        listener: (context, state) {
-          if (state is TodoLoadFailure) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(state.message)));
-          }
-
-          if (state is TodoScheduleSuccess) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(state.message)));
-          }
-        },
-        builder: (context, state) {
-          if (state is TodoLoadSuccess) {
-            if (state.todos.isNotEmpty) {
-              return ListView.separated(
-                itemBuilder: (_, index) {
-                  return TodoCheckboxTile(
-                    todo: state.todos[index],
-                    onChanged: (value) {
-                      todoBloc.add(TodoUpdated(
-                        state.todos[index].copyWith(complete: value),
-                      ));
-                    },
-                    onTap: () => showDialog(
-                      context: context,
-                      builder: (_) => TodoForm(todo: state.todos[index]),
-                    ),
-                  );
-                },
-                separatorBuilder: (_, index) => Divider(),
-                itemCount: state.todos.length,
-              );
-            } else {
-              return Center(
-                child: Text('No Data'),
-              );
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<TodoBloc, TodoState>(
+            listener: (context, state) {
+              if (state is TodoLoadFailure) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+          ),
+          BlocListener<NotificationBloc, NotificationState>(
+            listener: (context, state) {
+              if (state is NotificationScheduledSuccess) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<TodoBloc, TodoState>(
+          builder: (context, state) {
+            if (state is TodoLoadSuccess) {
+              if (state.todos.isNotEmpty) {
+                return ListView.separated(
+                  itemBuilder: (_, index) {
+                    return TodoCheckboxTile(
+                      todo: state.todos[index],
+                      onChanged: (value) {
+                        todoBloc.add(TodoUpdated(
+                          state.todos[index].copyWith(complete: value),
+                        ));
+                      },
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (_) => TodoForm(todo: state.todos[index]),
+                      ),
+                    );
+                  },
+                  separatorBuilder: (_, index) => Divider(),
+                  itemCount: state.todos.length,
+                );
+              } else {
+                return Center(
+                  child: Text('No Data'),
+                );
+              }
             }
-          }
 
-          return Container();
-        },
+            return Container();
+          },
+        ),
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.all(8.0),

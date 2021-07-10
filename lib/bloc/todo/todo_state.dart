@@ -32,11 +32,29 @@ class TodoLoadFailure extends TodoState {
   List<Object> get props => [message];
 }
 
-class TodoScheduleSuccess extends TodoState {
-  final String message;
+class TodoAddedSuccess extends TodoState {
+  final Todo todo;
 
-  const TodoScheduleSuccess(this.message);
+  TodoAddedSuccess(this.todo);
 
   @override
-  List<Object> get props => [message];
+  List<Object> get props => [todo];
+}
+
+class TodoUpdatedSuccess extends TodoState {
+  final Todo todo;
+
+  TodoUpdatedSuccess(this.todo);
+
+  @override
+  List<Object> get props => [todo];
+}
+
+class TodoDeletedSuccess extends TodoState {
+  final Todo todo;
+
+  TodoDeletedSuccess(this.todo);
+
+  @override
+  List<Object> get props => [todo];
 }
